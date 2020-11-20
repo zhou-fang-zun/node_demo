@@ -5,6 +5,7 @@ const userSchema = new mongoose.Schema({
 	pwd: {type: Number, required: true},
 	repwd: {type: Number, required: true},
 	gender: {type: Number, required: true},
+	phone: {type: Number, required: true},
 	avatar: {type: String}
 })
 
