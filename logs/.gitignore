@@ -1,0 +1,4 @@
+# Ignore everything in this directory 忽略此目录下的所有内容
+*
+# Except this file 除了这个文件
+!.gitignore
