@@ -33,3 +33,11 @@ router.post('/register',(req,res) => {
 		res.send({ code:-1, success:false, msg:'注册失败'})
 	})
 })
+
+//req.session.user = user
+//find  查找
+//insertMany  插入
+//foodModel.find({}).limit(Number(pageSize)).skip(Number(page-1)*pageSize)  分页
+//foodModel.find({$or:[{name:{$regex:reg}},{desc:{$regex:reg}}]})   模糊查询
+//remove  删除   foodModel.remove({_id:[id1,id2,id3]})  多个删除
+//update  修改
