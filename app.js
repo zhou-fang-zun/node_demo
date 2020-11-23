@@ -3,6 +3,7 @@ const express = require('express')
 const session = require('express-session')
 const winston = require('winston')
 const expressWinston = require('express-winston')
+const router = require('./router')
 const app = express()
 
 const bodyparser = require('body-parser')
@@ -23,13 +24,13 @@ app.use(session({
 }))
 
 //处理表单及文件上传的中间件
-app.use(require('express-formidable')({
+/*app.use(require('express-formidable')({
 	uploadDir: path.join(__dirname,'public/img'),  //上传文件目录
 	keepExtensions: true  //保留后缀
-}))
+}))*/
 
 //正常请求的日志
-app.use(expressWinston.logger({
+/*app.use(expressWinston.logger({
 	transports: [
 		new (winston.transports.Console)({
 			json: true,
@@ -39,7 +40,7 @@ app.use(expressWinston.logger({
 			filename: 'logs/success.log'
 		})
 	]
-}))
+}))*/
 
 app.all('*',(req,res,next) => {
 	const { origin, Origin, referer, Referer} = req.headers;
@@ -59,11 +60,10 @@ app.all('*',(req,res,next) => {
 })
 
 //路由要放到上面这个中间件后面，不然就跳过了
-//const router = require('./router')
-//router(app)
+router(app)
 
 // 错误请求的日志
-app.use(expressWinston.errorLogger({
+/*app.use(expressWinston.errorLogger({
   transports: [
     new winston.transports.Console({
       json: true,
@@ -73,7 +73,7 @@ app.use(expressWinston.errorLogger({
       filename: 'logs/error.log'
     })
   ]
-}))
+}))*/
 
 app.listen(3000,()=>{
 	console.log('服务器启动')
