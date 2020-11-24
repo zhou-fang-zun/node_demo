@@ -1,6 +1,6 @@
 const Ids = require('../db/model/ids.js')
 
-const idList = ['admin_id']
+const idList = ['admin_id','todo_id']
 async function getId(type){
 	if (!idList.includes(type)) {
 		throw new Error('id类型错误');

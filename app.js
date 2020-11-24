@@ -3,6 +3,7 @@ const express = require('express')
 const session = require('express-session')
 const winston = require('winston')
 const expressWinston = require('express-winston')
+const db = require('./db/connect')
 const router = require('./router')
 const app = express()
 
@@ -24,10 +25,10 @@ app.use(session({
 }))
 
 //处理表单及文件上传的中间件
-/*app.use(require('express-formidable')({
+/* app.use(require('express-formidable')({
 	uploadDir: path.join(__dirname,'public/img'),  //上传文件目录
 	keepExtensions: true  //保留后缀
-}))*/
+})) */
 
 //正常请求的日志
 /*app.use(expressWinston.logger({

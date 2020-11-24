@@ -1,74 +1,152 @@
 const express = require('express')
 const router = express.Router()
-const User = require('../db/modal/userModel')
-const getId = require('.common.js')
+const UserModel = require('../db/model/userModel')
+const getId = require('./common.js')
+const encryption = require('../middlewares/crypto')
 
 //注册
-router.post('/register',(req,res) => {
-	const form = new formidable.IncomingForm();
-	form.parse(req,async (err,fields,files) => {
-		if(err){
-			res.send({ status: 0, success: false, msg: '表单信息错误'})
-			return
-		}
-		const { name, pwd, gender = 0, phone, avatar } = fields
-		try{
-			if(!name) throw new Error('用户名错误')
-			if(!pwd) throw new Error('密码错误')
-			if(!phone) throw new Error('手机号错误')
-		}catch(err){
-			res.send({ status: 0, success: false, msg: err.message })
-			return
-		}
-		const newpassword = md5(pwd)
-		try{
-			const admin = User.findOne({name})
-			if(admin){
-				res.send({ status: 0, success: false, msg: '该用户已经存在' })
-			}else{
-				const admin_id = await getId('admin_id')
-				const postData = {
-					name, pwd: newpassword, gender, phone, avatar, id: admin_id
-				}
-				await User.create(postData)
-				req.session.admin_id = admin_id
-				res.send({ status: 1, success: true, msg: '注册成功' })
+router.post('/register',async (req,res) => {
+	const { name, pwd, gender = 0, phone, avatar } = req.body
+	try{
+		if(!name) throw new Error('用户名错误')
+		if(!pwd) throw new Error('密码错误')
+		if(!phone) throw new Error('手机号错误')
+	}catch(err){
+		res.send({ status: 0, success: false, msg: err.message })
+		return
+	}
+	const newpassword = encryption(pwd)
+	try{
+		const admin = UserModel.findOne({name})
+		if(admin.length){
+			res.send({ status: 0, success: false, msg: '该用户已经存在' })
+		}else{
+			const admin_id = await getId('admin_id')
+			const postData = {
+				name, pwd: newpassword, gender, phone, avatar, id: admin_id
 			}
-		}catch(err){
-			res.send({ status: 0, success: false, msg: '注册失败' })
-			return
+			console.log(postData,'123')
+			await UserModel.create(postData)
+			req.session.admin_id = admin_id
+			res.send({ status: 1, success: true, msg: '注册成功' })
 		}
-	})
+	}catch(err){
+		res.send({ status: 0, success: false, msg: '注册失败' })
+		return
+	}
 })
 
 //登录
-router.post('/loginin',(req,res) =>{
+router.post('/signin',async (req,res) =>{
 	const cap = req.cookies.cap
 	if(!cap){
 		res.send({ status: 0, success: false, msg: '验证码失效' })
 		return
 	}
-	const form = new formidable.IncomingForm()
-	form.parse(req,async (err,fields,files) => {
-		if(err){
-			res.send({ status: 0, success: false, msg: '表单信息错误'})
+	const { name, pwd, captcha } = req.body
+	try{
+		if(!name) throw new Error('用户名参数错误')
+		if(!pwd) throw new Error('密码参数错误')
+		if(!captcha) throw new Error('验证码参数错误')
+	}catch(err){
+		res.send({ status: 0, success: false, msg: err.message})
+		return
+	}
+	if(cap.toString() !== captcha.toString()){
+		res.send({ status: 0, success: false, msg: '验证码不正确'})
+		return
+	}
+	const newPassword = encryption(pwd)
+	try{
+		const user = await UserModel.findOne({name})
+		//找不到就让它注册
+		if(!user){
+			const admin_id = await getId('admin_id')
+			const newUser = {
+				name, pwd: newPassword, id: admin_id,
+			}
+			await UserModel.create(newUser)
+			req.session.admin_id = admin_id
+			res.send({ status: 1, success: true, msg: '登录成功'})
+		}else if(user.pwd.toString() !== newPassword.toString()){
+			res.send({ status: 0, success: false, msg: '密码不正确'})
 			return
+		}else{
+			req.session.admin_id = admin_id
+			res.send({ status: 1, success: true, msg: '登录成功'})
 		}
-		const { name, pwd, captcha } = fields
-		try{
-			if(!name) throw new Error('用户名参数错误')
-			if(!pwd) throw new Error('密码参数错误')
-			if(!captcha) throw new Error('验证码参数错误')
-		}catch(err){
-			res.send({ status: 0, success: false, msg: err.message})
-			return
-		}
-		if(cap.toString() !== captcha.toString()){
-			res.send({ status: 0, success: false, msg: '验证码不正确'})
-			return
-		}
-	})
+	}catch(err){
+		res.send({ status: 0, success: false, msg: '登录失败'})
+	}
 })
+
+//修改密码
+router.post('/changePwd',async (req,res) =>{
+	const cap = req.cookies.cap
+	if(!cap){
+		res.send({ status: 0, success: false, msg: '验证码失效'})
+		return
+	}
+	const { name,oldPwd,newPwd,confirmPwd,captcha } = req.body
+	try{
+		if(!name){
+			throw new Error('用户名参数错误')
+		}else if(!oldPwd){
+			throw new Error('旧密码参数错误')
+		}else if(!newPwd){
+			throw new Error('必须填写新密码')
+		}else if(!confirmPwd){
+			throw new Error('两次密码不一致')
+		}else if(!captcha){
+			throw new Error('请填写验证码')
+		}
+	}catch(err){
+		res.send({ status: 0, success: false, msg: '修改密码参数错误'})
+	}
+	if(cap.toString() !== captcha.toString()){
+		res.send({ status: 0, success: false, msg: '验证码错误'})
+		return
+	}
+	const md5OldPassword = encryption(oldPwd)
+	try{
+		const user = await UserModel.findOne({name})
+		if(!user){
+			res.send({ status: 0, success: false, msg: '未找到当前用户'})
+		}else if(user.pwd.toString() !== md5OldPassword.toString()){
+			res.send({ status: 0, success: false, msg: '密码不正确'})
+		}else{
+			user.pwd = encryption(newPwd)
+			user.save();
+			res.send({ status: 1, success: true, msg: '修改密码成功'})
+		}
+	}catch(err){
+		res.send({ status: 0, success: false, msg: '修改密码失败'})
+	}
+})
+
+//退出
+router.post('/signout',(req,res) => {
+	try{
+		delete req.session.admin_id
+		res.send({ status: 1, success: true, msg: '退出成功'})
+	}catch(err){
+		res.send({ status: 0, success: false, msg: '退出失败'})
+	}
+})
+
+//测试
+router.post('/test',async (req,res) =>{
+	const { name } = req.body
+	console.log(name,'name')
+	const result = await UserModel.find({name})
+	if(result){
+		res.send({status: 1, success:true, data: result})
+	}else{
+		res.send({status: 0, success:false, msg: '无数据'})
+	}
+})
+
+module.exports = router
 //req.session.user = user
 //find  查找
 //insertMany  插入
@@ -76,3 +154,4 @@ router.post('/loginin',(req,res) =>{
 //foodModel.find({$or:[{name:{$regex:reg}},{desc:{$regex:reg}}]})   模糊查询
 //remove  删除   foodModel.remove({_id:[id1,id2,id3]})  多个删除
 //update  修改
+//findOneAndUpdate
