@@ -33,10 +33,10 @@ router.get('/getTodoList',async (req,res) =>{
 
 //编辑
 router.put('/updateTodo',async (req,res) =>{
-	const { title, content, deadline, _id } = req.body
+	const { title, content, deadline, id } = req.body
 	const updateData = {title, content, deadline}
 	try{
-		await TodoModel.findOneAndUpdate({_id},updateData)
+		await TodoModel.findOneAndUpdate({_id: id},updateData)
 		res.send({ status: 1, success: true, msg:'修改成功' })
 	}catch(err){
 		res.send({ status: 0, success: false, msg:'修改失败' })
@@ -45,20 +45,20 @@ router.put('/updateTodo',async (req,res) =>{
 
 //详情
 router.get('/getTodoDetail',async (req,res) =>{
-	const { _id } = req.query
+	const { id } = req.query
 	try{
-		const data = await TodoModel.findOne({_id})
+		const data = await TodoModel.findOne({_id: id})
 		res.send({ status: 1, success: true, msg:'请求成功',data })
 	}catch(err){
-		res.send({ status: 0, success: false, msg:'请求失败',data: [] })
+		res.send({ status: 0, success: false, msg:'请求失败',data: {} })
 	}
 })
 
 //删除
 router.delete('/deleteTodo',async (req,res) => {
-	const {_id} = req.query
+	const {id} = req.query
 	try{
-		await TodoModel.remove({_id})
+		await TodoModel.remove({_id: id})
 		res.send({ status: 1, success: true, msg:'删除成功' })
 	}catch(err){
 		res.send({ status: 0, success: false, msg:'删除失败' })

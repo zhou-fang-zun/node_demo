@@ -3,6 +3,7 @@ const router = express.Router()
 const UserModel = require('../db/model/userModel')
 const getId = require('./common.js')
 const encryption = require('../middlewares/crypto')
+const tokens = require('../utils/tokens')
 
 //注册
 router.post('/register',async (req,res) => {
@@ -66,14 +67,20 @@ router.post('/signin',async (req,res) =>{
 				name, pwd: newPassword, id: admin_id,
 			}
 			await UserModel.create(newUser)
+			let token = tokens.setToken(60 * 60 * 24 * 7,{name,id})
 			req.session.admin_id = admin_id
-			res.send({ status: 1, success: true, msg: '登录成功'})
+			res.send({ status: 1, success: true, msg: '登录成功', data:{
+				token
+			}})
 		}else if(user.pwd.toString() !== newPassword.toString()){
 			res.send({ status: 0, success: false, msg: '密码不正确'})
 			return
 		}else{
+			//jwt验证(生成token的)
+			let token = tokens.setToken(60 * 60 * 24 * 7,{name,id})
+			//登录成功后将用户的相关信息存到session(这是session+cookie的验证)
 			req.session.admin_id = admin_id
-			res.send({ status: 1, success: true, msg: '登录成功'})
+			res.send({ status: 1, success: true, msg: '登录成功', data:{ token }})
 		}
 	}catch(err){
 		res.send({ status: 0, success: false, msg: '登录失败'})
@@ -127,6 +134,7 @@ router.post('/changePwd',async (req,res) =>{
 //退出
 router.post('/signout',(req,res) => {
 	try{
+		//退出登录删除session token
 		delete req.session.admin_id
 		res.send({ status: 1, success: true, msg: '退出成功'})
 	}catch(err){
