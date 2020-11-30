@@ -8,6 +8,6 @@ const todoSchema = new mongoose.Schema({
 })
 todoSchema.index({id: 1})
 
-const todo = new mongoose.model('Todos',todoSchema)
+const todo = mongoose.model('Todos',todoSchema)
 
 module.exports = todo

@@ -6,7 +6,7 @@ class Tokens{
         let token = reqBody.accessToken || req.query.accessToken || req.headers['access-token'] || req.cookies.accessToken
         if(token){
             //存在token解析token
-            await jwt.verify(token,'client',(err,decoded) => {
+            await jwt.verify(token,'client',async (err,decoded) => {
                 if(err){
                     res.send({ status: 0, success: false, msg: '当前用户未登录，请重新登录', data:{
                         islogin: false,

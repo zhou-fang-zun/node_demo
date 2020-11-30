@@ -40,7 +40,8 @@ router.post('/register',async (req,res) => {
 //登录
 router.post('/signin',async (req,res) =>{
 	const cap = req.cookies.cap
-	if(!cap){
+	console.log(cap,'cap')
+	if(!cap || cap === undefined){
 		res.send({ status: 0, success: false, msg: '验证码失效' })
 		return
 	}

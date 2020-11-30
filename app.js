@@ -13,7 +13,7 @@ app.use(bodyparser.json())   //解析json数据
 
 //const db = require('./db/connect')  //连接数据库
 //设置静态目录
-//app.use('/public',express.static('public'))
+//app.use('/public/',express.static('./public'))
 app.use(express.static(path.join(__dirname,'public')))
 
 app.use(session({
