@@ -1,6 +1,7 @@
 const path = require('path')
 const express = require('express')
 const session = require('express-session')
+const cookieParser = require('cookie-parser')
 const winston = require('winston')
 const expressWinston = require('express-winston')
 const db = require('./db/connect')
@@ -10,6 +11,8 @@ const app = express()
 const bodyparser = require('body-parser')
 app.use(bodyparser.urlencoded({extended: false}))  //解析表单数据
 app.use(bodyparser.json())   //解析json数据
+
+app.use(cookieParser())
 
 //const db = require('./db/connect')  //连接数据库
 //设置静态目录
