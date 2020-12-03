@@ -20,6 +20,8 @@
     "formidable": "^1.2.2",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.10.15",
+    "node-uuid": "^1.4.8",
+    "node-xlsx": "^0.15.0",
     "winston": "^3.3.3"
   }
 }

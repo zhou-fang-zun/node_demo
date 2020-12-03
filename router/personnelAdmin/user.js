@@ -1,8 +1,8 @@
 const express = require('express')
 const router = express.Router()
-const UserModel = require('../../db/model/userNodel')
-const getId = require('./common.js')
-const encryption = require('../middlewares/crypto')
+const UserModel = require('../../db/model/userModel')
+const getId = require('../common.js')
+const encryption = require('../../middlewares/crypto')
 
 //新增
 router.post('/addUser',async (req,res) =>{

@@ -6,6 +6,7 @@ const winston = require('winston')
 const expressWinston = require('express-winston')
 const db = require('./db/connect')
 const router = require('./router')
+const verify = require('./utils/verifyToken')
 const app = express()
 
 const bodyparser = require('body-parser')
@@ -62,6 +63,9 @@ app.all('*',(req,res,next) => {
 		next()
 	}
 })
+
+//校验 token
+verify(app)
 
 //路由要放到上面这个中间件后面，不然就跳过了
 router(app)

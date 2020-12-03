@@ -35,8 +35,8 @@ class Tokens{
     }
 
     static setToken(time,data){
-        return jwt.sign(data,'client',{
-            expirseIn: time
+        return jwt.sign({...data},'client',{
+            expiresIn: time
         })
     }
 }

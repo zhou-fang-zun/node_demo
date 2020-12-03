@@ -19,7 +19,7 @@ router.post('/register',async (req,res) => {
 	const newpassword = encryption(pwd)
 	try{
 		const admin = UserModel.findOne({name})
-		if(admin.length){
+		if(admin){
 			res.send({ status: 0, success: false, msg: '该用户已经存在' })
 		}else{
 			const admin_id = await getId('admin_id')
@@ -40,7 +40,6 @@ router.post('/register',async (req,res) => {
 //登录
 router.post('/signin',async (req,res) =>{
 	const cap = req.cookies.cap
-	console.log(cap,'cap')
 	if(!cap || cap === undefined){
 		res.send({ status: 0, success: false, msg: '验证码失效' })
 		return
@@ -61,6 +60,7 @@ router.post('/signin',async (req,res) =>{
 	const newPassword = encryption(pwd)
 	try{
 		const user = await UserModel.findOne({name})
+		console.log(user,'user')
 		//找不到就让它注册
 		if(!user){
 			const admin_id = await getId('admin_id')
@@ -75,12 +75,12 @@ router.post('/signin',async (req,res) =>{
 			}})
 		}else if(user.pwd.toString() !== newPassword.toString()){
 			res.send({ status: 0, success: false, msg: '密码不正确'})
-			return
 		}else{
 			//jwt验证(生成token的)
-			let token = tokens.setToken(60 * 60 * 24 * 7,{name,id})
+			let token = tokens.setToken(60 * 60 * 24 * 7,{name,id: user._id})
+			console.log(token,'token')
 			//登录成功后将用户的相关信息存到session(这是session+cookie的验证)
-			req.session.admin_id = admin_id
+			//req.session.admin_id = admin_id
 			res.send({ status: 1, success: true, msg: '登录成功', data:{ token }})
 		}
 	}catch(err){
